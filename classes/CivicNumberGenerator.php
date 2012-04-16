@@ -3,13 +3,13 @@
  * Generates a Swedish civic number based on the input.
  */
 class CivicNumberGenerator {
-    private static $pattern = "/^[1-2][0-9]{3}[0-1][0-9][0-3][0-9]$/";
+    private static $pattern = "/^[0-9]{2}[0-1][0-9][0-3][0-9]$/";
 
     /**
      * Generates a civic number for a person with the provided $dateOfBirth and $gender.
-     * @param $dateOfBirth - the date of birth. Muste be a date formatted as YYYYMMDD
+     * @param $dateOfBirth - the date of birth. Muste be a date formatted as YYMMDD
      * @param null $gender - the gender of the person. Must be either 'm' or 'f' (optional)
-     * @return string - the generated civic number formatted as YYYYMMDD-NNNN
+     * @return string - the generated civic number formatted as YYMMDD-NNNN
      */
     public static function generate($dateOfBirth, $gender = null) {
         CivicNumberGenerator::validate($dateOfBirth);
@@ -18,11 +18,14 @@ class CivicNumberGenerator {
             $gender = rand(0,1) == 0 ? "m" : "f";
         }
 
-        $result = $dateOfBirth . "-" . rand(0,9) . rand(0,9);
-        $result .= CivicNumberGenerator::generateGenderDigitFrom($gender);
-        $result .= CivicNumberGenerator::generateControlNumberFrom($result);
+        $controlNumbers = rand(0,9)
+            .rand(0,9)
+            .CivicNumberGenerator::generateGenderDigitFrom($gender);
 
-        return $result;
+        $controlNumbers .=
+            CivicNumberGenerator::generateControlNumberFrom($dateOfBirth . $controlNumbers);
+
+        return $dateOfBirth . "-" . $controlNumbers;
     }
 
     private static function generateGenderDigitFrom($gender) {
@@ -61,7 +64,7 @@ class CivicNumberGenerator {
             throw new InvalidArgumentException("Date of birth was null, aborting");
         }
         if (preg_match(CivicNumberGenerator::$pattern, $dateOfBirth) == 0) {
-            throw new InvalidArgumentException("Expected format 'YYYYMMDD' but got '" . $dateOfBirth . "'");
+            throw new InvalidArgumentException("Expected format 'YYMMDD' but got '" . $dateOfBirth . "'");
         }
     }
 }
