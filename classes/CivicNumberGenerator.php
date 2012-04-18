@@ -3,13 +3,13 @@
  * Generates a Swedish civic number based on the input.
  */
 class CivicNumberGenerator {
-    private static $pattern = "/^[0-9]{2}[0-1][0-9][0-3][0-9]$/";
+    private static $pattern = "/^[1-2][0-9]{3}[0-1][0-9][0-3][0-9]$/";
 
     /**
      * Generates a civic number for a person with the provided $dateOfBirth and $gender.
-     * @param $dateOfBirth - the date of birth. Muste be a date formatted as YYMMDD
+     * @param $dateOfBirth - the date of birth. Muste be a date formatted as YYYYMMDD
      * @param null $gender - the gender of the person. Must be either 'm' or 'f' (optional)
-     * @return string - the generated civic number formatted as YYMMDD-NNNN
+     * @return string - the generated civic number formatted as YYYYMMDD-NNNN
      */
     public static function generate($dateOfBirth, $gender = null) {
         CivicNumberGenerator::validate($dateOfBirth);
@@ -22,8 +22,9 @@ class CivicNumberGenerator {
             .rand(0,9)
             .CivicNumberGenerator::generateGenderDigitFrom($gender);
 
-        $controlNumbers .=
-            CivicNumberGenerator::generateControlNumberFrom($dateOfBirth . $controlNumbers);
+        $source = substr($dateOfBirth, 2, strlen($dateOfBirth)) . $controlNumbers;
+
+        $controlNumbers .= CivicNumberGenerator::generateControlNumberFrom($source);
 
         return $dateOfBirth . "-" . $controlNumbers;
     }
@@ -64,7 +65,7 @@ class CivicNumberGenerator {
             throw new InvalidArgumentException("Date of birth was null, aborting");
         }
         if (preg_match(CivicNumberGenerator::$pattern, $dateOfBirth) == 0) {
-            throw new InvalidArgumentException("Expected format 'YYMMDD' but got '" . $dateOfBirth . "'");
+            throw new InvalidArgumentException("Expected argument format 'YYYYMMDD' but got '" . $dateOfBirth . "'");
         }
     }
 }
